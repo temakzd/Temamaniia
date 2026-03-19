@@ -2,227 +2,109 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Блог Артёма из 25 школы</title>
 
 <style>
-
-body{
-font-family:Arial;
-background:#fafafa;
-margin:0;
-}
-
-header{
-background:white;
-border-bottom:1px solid #ddd;
-padding:15px;
-text-align:center;
-font-size:24px;
-font-weight:bold;
-}
-
-.container{
-max-width:600px;
-margin:auto;
-padding:20px;
-}
-
-.form{
-background:white;
-padding:15px;
-border-radius:10px;
-margin-bottom:20px;
-box-shadow:0 2px 10px rgba(0,0,0,0.1);
-}
-
-input, textarea{
-width:100%;
-padding:10px;
-margin-top:10px;
-}
-
-button{
-margin-top:10px;
-padding:10px;
-border:none;
-background:#0095f6;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
-
-.post{
-background:white;
-margin-bottom:20px;
-border-radius:10px;
-box-shadow:0 2px 10px rgba(0,0,0,0.1);
-overflow:hidden;
-}
-
-.post img{
-width:100%;
-}
-
-.post-content{
-padding:15px;
-}
-
-.actions{
-margin-top:10px;
-}
-
-.like{
-cursor:pointer;
-color:red;
-font-size:18px;
-}
-
-.comment-box{
-margin-top:10px;
-}
-
-.comment{
-background:#f1f1f1;
-padding:5px;
-margin-top:5px;
-border-radius:5px;
-font-size:14px;
-}
-
+body{font-family:Arial;margin:0;background:#f5f5f5}
+nav{background:#333;padding:10px;text-align:center}
+nav button{margin:5px;padding:10px 15px;border:none;background:#555;color:#fff;border-radius:6px;cursor:pointer}
+nav button:hover{background:#777}
+.container{max-width:800px;margin:auto;padding:20px}
+.page{display:none}
+.active{display:block}
+.card{background:#fff;padding:20px;border-radius:10px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+img{max-width:100%;border-radius:10px;margin-top:10px}
+textarea,input{width:100%;padding:10px;margin-top:10px}
+button.save{background:#0095f6;color:white;margin-top:10px}
 </style>
 </head>
 
 <body>
 
-<header>
-Блог Артёма из 25 школы
-</header>
+<nav>
+<button onclick="showPage('about')">Обо мне</button>
+<button onclick="showPage('hobby')">Моё хобби</button>
+<button onclick="showPage('achievements')">Мои достижения</button>
+</nav>
 
 <div class="container">
 
-<div class="form">
-<input id="title" placeholder="Название поста">
-<textarea id="text" placeholder="Текст поста"></textarea>
-<input type="file" id="image">
-<button onclick="publish()">Опубликовать</button>
+<!-- ОБО МНЕ -->
+<div id="about" class="page active">
+<div class="card">
+<h2>Обо мне</h2>
+<input id="name" placeholder="Имя и фамилия">
+<textarea id="aboutText" placeholder="Расскажи о себе..."></textarea>
+<input type="file" id="aboutImg">
+<button class="save" onclick="saveData('about')">Сохранить</button>
+<div id="aboutResult"></div>
+</div>
 </div>
 
-<div id="posts"></div>
+<!-- ХОББИ -->
+<div id="hobby" class="page">
+<div class="card">
+<h2>Моё хобби</h2>
+<textarea id="hobbyText" placeholder="Расскажи о хобби..."></textarea>
+<input type="file" id="hobbyImg">
+<button class="save" onclick="saveData('hobby')">Сохранить</button>
+<div id="hobbyResult"></div>
+</div>
+</div>
+
+<!-- ДОСТИЖЕНИЯ -->
+<div id="achievements" class="page">
+<div class="card">
+<h2>Мои достижения</h2>
+<textarea id="achText" placeholder="Напиши достижения..."></textarea>
+<input type="file" id="achImg">
+<button class="save" onclick="saveData('ach')">Сохранить</button>
+<div id="achResult"></div>
+</div>
+</div>
 
 </div>
 
 <script>
 
-let posts = []
-
-function publish(){
-
-let title = document.getElementById("title").value
-let text = document.getElementById("text").value
-let image = document.getElementById("image").files[0]
-
-let post = {
-title:title,
-text:text,
-likes:0,
-comments:[]
+function showPage(page){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+document.getElementById(page).classList.add('active')
 }
 
-if(image){
+function saveData(type){
 
-let reader = new FileReader()
+let text, file, resultDiv, extra=""
 
+if(type==='about'){
+text=document.getElementById('aboutText').value
+file=document.getElementById('aboutImg').files[0]
+resultDiv=document.getElementById('aboutResult')
+extra = '<h3>'+document.getElementById('name').value+'</h3>'
+}
+
+if(type==='hobby'){
+text=document.getElementById('hobbyText').value
+file=document.getElementById('hobbyImg').files[0]
+resultDiv=document.getElementById('hobbyResult')
+}
+
+if(type==='ach'){
+text=document.getElementById('achText').value
+file=document.getElementById('achImg').files[0]
+resultDiv=document.getElementById('achResult')
+}
+
+if(file){
+let reader=new FileReader()
 reader.onload=function(){
-post.image = reader.result
-posts.push(post)
-render()
+resultDiv.innerHTML = extra + '<p>'+text+'</p><img src="'+reader.result+'">'
 }
-
-reader.readAsDataURL(image)
-
+reader.readAsDataURL(file)
 }else{
-
-posts.push(post)
-render()
-
+resultDiv.innerHTML = extra + '<p>'+text+'</p>'
 }
-
-}
-
-function likePost(index){
-
-posts[index].likes++
-render()
-
-}
-
-function addComment(index){
-
-let input = document.getElementById("comment"+index)
-
-if(input.value!=""){
-
-posts[index].comments.push(input.value)
-input.value=""
-render()
-
-}
-
-}
-
-function render(){
-
-let postsDiv = document.getElementById("posts")
-
-postsDiv.innerHTML=""
-
-posts.slice().reverse().forEach((post,i)=>{
-
-let realIndex = posts.length-1-i
-
-let html = `
-<div class="post">
-
-${post.image ? `<img src="${post.image}">` : ""}
-
-<div class="post-content">
-
-<h3>${post.title}</h3>
-
-<p>${post.text}</p>
-
-<div class="actions">
-
-<span class="like" onclick="likePost(${realIndex})">
-❤️ ${post.likes}
-</span>
-
-</div>
-
-<div class="comment-box">
-
-<input id="comment${realIndex}" placeholder="Комментарий">
-
-<button onclick="addComment(${realIndex})">
-Отправить
-</button>
-
-</div>
-
-<div>
-
-${post.comments.map(c=>`<div class="comment">${c}</div>`).join("")}
-
-</div>
-
-</div>
-
-</div>
-`
-
-postsDiv.innerHTML += html
-
-})
 
 }
 
